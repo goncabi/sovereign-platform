@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16
+    container_name: thesis-postgres
+    restart: unless-stopped
+    shm_size: 128mb
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: ["postgres", "-c", "log_connections=on", "-c", "log_disconnections=on"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - sovereign-net
+
+volumes:
+  postgres_data:
+    external: true
+    name: sovereign-data-pipeline_postgres_data
+
+networks:
+  sovereign-net:
+    external: true
